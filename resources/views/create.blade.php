@@ -8,6 +8,10 @@
         </div>
 
         <div class="modal-body">
+            <div id="successMessage" class="alert alert-success" style="display: none;">
+                ছাত্র সফলভাবে যোগ করা হয়েছে!
+            </div>
+
             <form id="addStudentForm">
                 @csrf
                 <div class="mb-3">
@@ -43,6 +47,9 @@
 
   @push('scripts')
   <script>
+    /*Basic data upload no update table data
+    ==========================================
+
     $(document).ready(function () {
         $(document).on('click','.add_student',function(e){
             e.preventDefault();
@@ -55,7 +62,7 @@
                 data: {name:name,email:email,phone:phone},
                 _token: '{{ csrf_token() }}',
                 success: function (response) {
-                    alert('Student added successfully!');
+                    $('#successMessage').fadeIn().delay(3000).fadeOut();
                     $('#addStudentForm')[0].reset();
                 },
                 error: function(xhr){
@@ -65,5 +72,47 @@
         })
 
     });
+
+    =========================================
+    =======================================*/
+
+    $(document).ready(function () {
+        $(document).on('click','.add_student',function(e){
+            e.preventDefault();
+            let name = $('#name').val();
+            let email = $('#email').val();
+            let phone = $('#phone').val();
+            $.ajax({
+                type: "post",
+                url: "{{ route('add.student') }}",
+                data: {name:name,email:email,phone:phone},
+                _token: '{{ csrf_token() }}',
+                success: function (response) {
+                    let newRow = `
+                    <tr>
+                        <td>New</td>
+                        <td>${response.student.name}</td>
+                        <td>${response.student.email}</td>
+                        <td>${response.student.phone}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary">Edit</button>
+                            <button class="btn btn-sm btn-danger">Delete</button>
+                        </td>
+                    </tr>
+                `;
+
+                $('table tbody').append(newRow);
+                $('#addStudentForm')[0].reset();
+                $('#addStudentModal').modal('hide');
+
+                },
+                error: function(xhr){
+                    alert('Something went wrong!');
+                }
+            });
+        })
+
+    });
+
 </script>
   @endpush
